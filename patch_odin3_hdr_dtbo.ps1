@@ -57,6 +57,11 @@ function Align4 {
   return (($Value + 3) -band (-bnot 3))
 }
 
+function Align4From {
+  param([int]$Value, [int]$Base)
+  return $Base + (Align4 ($Value - $Base))
+}
+
 function Get-CString {
   param([byte[]]$Bytes, [int]$Offset)
   $end = $Offset
@@ -98,7 +103,7 @@ function Patch-Fdt {
     switch ($token) {
       1 {
         $name = Get-CString $Image $pos
-        $pos = Align4 ($pos + $name.Length + 1)
+        $pos = Align4From ($pos + $name.Length + 1) $FdtOffset
         if ($name.Length -gt 0) {
           $path.Add($name)
         }
@@ -135,7 +140,7 @@ function Patch-Fdt {
           }
         }
 
-        $pos = Align4 ($pos + $len)
+        $pos = Align4From ($pos + $len) $FdtOffset
       }
       4 { }
       default {

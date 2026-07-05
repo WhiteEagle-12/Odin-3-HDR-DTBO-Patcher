@@ -17,7 +17,7 @@ Qualcomm's display stack interprets that as `420.0` nits. The Odin 3 panel displ
 - display config brightness curve: about `782.4283` nits
 - DTBO-reported HDR peak brightness: `420.0` nits
 
-This patch changes only the active ICNA3520 panel peak-brightness entries:
+This patch changes only the active ICNA3520 panel peak-brightness entries across all matching DTBO overlays:
 
 ```text
 4200000 -> 7824283
@@ -84,6 +84,8 @@ The script will:
 5. Flash the patched image back to the active `dtbo` partition.
 6. Pull a readback copy and verify the hash.
 7. Reboot unless `-NoReboot` is used.
+
+On tested Odin 3 firmware this patches 40 ICNA3520 peak-brightness entries. The parser handles embedded FDT blobs even when their DTBO offsets are not 4-byte aligned.
 
 Backups are saved under:
 

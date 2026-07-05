@@ -1,3 +1,11 @@
 backups/
 *.img
 *.log
+*.zip
+displayconfig-checks/
+fixed-script-device-test/
+parser-fix-validation/
+pre-fix-config-backups/
+pre-fixed-restore-verification/
+restore-known-working/
+slot-state-checks/
