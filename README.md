@@ -113,6 +113,44 @@ To patch and verify without automatically rebooting:
 
 You must still reboot before Android uses the patched DTBO.
 
+## Optional Magisk Guard
+
+This repo also includes an optional Magisk module source tree under:
+
+```text
+magisk/dtbo_brightness_guard/
+```
+
+The guard does not replace the PowerShell patcher. It is a persistence and reversibility helper for people who already ran the patcher and want Magisk to watch for OTA or slot-change regressions.
+
+Guard lifecycle:
+
+1. Run this patcher first so you have both images:
+   - `dtbo_<slot>.original.img`
+   - `dtbo_<slot>.hdr782.img` or `dtbo_<slot>.readback.img`
+2. Install the guard module in Magisk.
+3. Copy the images on-device:
+
+```sh
+adb shell su -c "mkdir -p /data/adb/dtbo_guard"
+adb push .\backups\<folder>\dtbo_a.hdr782.img /data/local/tmp/dtbo_patched.img
+adb push .\backups\<folder>\dtbo_a.original.img /data/local/tmp/dtbo_original.img
+adb shell su -c "cp /data/local/tmp/dtbo_patched.img /data/adb/dtbo_guard/dtbo_patched.img"
+adb shell su -c "cp /data/local/tmp/dtbo_original.img /data/adb/dtbo_guard/dtbo_original.img"
+```
+
+Use `dtbo_b` filenames instead if your active slot is `_b`.
+
+While installed, the guard checks the live ICNA3520 peak-brightness device-tree value after boot. If it sees stock or unknown values and `AUTO_FLASH=1`, it writes `dtbo_patched.img` back to the active `dtbo` partition. The patch takes effect after the next reboot.
+
+When removed in Magisk, `uninstall.sh` restores `dtbo_original.img` to the active `dtbo` partition if that backup exists and fits the partition. If the backup is missing or invalid, it logs the problem and leaves the DTBO untouched.
+
+Caveats:
+
+- Reversibility depends on keeping the correct `dtbo_original.img`.
+- By default, uninstall restores only the active slot. Set `RESTORE_BOTH_SLOTS=1` in `/data/adb/dtbo_guard/config.conf` if you intentionally want both slots restored.
+- By default, the guard patches only the active slot. Set `PATCH_BOTH_SLOTS=1` only if you intentionally want the inactive slot kept byte-identical to the same patched image.
+
 ## Verification
 
 After reboot:
