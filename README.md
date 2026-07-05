@@ -44,6 +44,10 @@ The complete Odin 3 HDR fix has two parts:
    - optionally keeps the SurfaceFlinger composition workaround active
    - is systemless and reversible
 
+Magisk module repo:
+
+https://github.com/kingaetheral/Odin-3-HDR-Fix-Persistence
+
 Use both for the full fix.
 
 ## Warning
@@ -148,6 +152,4 @@ OTAs or slot switches may replace the patched DTBO. If HDR max luminance returns
 
 ## Credits
 
-- kingaetheral
 - WhiteEagle-12
-- Zurce
