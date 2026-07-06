@@ -1,9 +1,9 @@
 #!/system/bin/sh
 # DTBO Peak Brightness Guard - boot service
 
-DIR=/data/adb/dtbo_guard
-CONF=$DIR/config.conf
-LOG=$DIR/guard.log
+MODDIR=${0%/*}
+CONF=$MODDIR/config.conf
+LOG=$MODDIR/guard.log
 
 log() { echo "$(date '+%m-%d %H:%M:%S') $1" >> "$LOG"; }
 

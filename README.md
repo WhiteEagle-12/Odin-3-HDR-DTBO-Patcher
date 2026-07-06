@@ -132,11 +132,8 @@ Guard lifecycle:
 3. Copy the images on-device:
 
 ```sh
-adb shell su -c "mkdir -p /data/adb/dtbo_guard"
 adb push .\backups\<folder>\dtbo_a.hdr782.img /data/local/tmp/dtbo_patched.img
 adb push .\backups\<folder>\dtbo_a.original.img /data/local/tmp/dtbo_original.img
-adb shell su -c "cp /data/local/tmp/dtbo_patched.img /data/adb/dtbo_guard/dtbo_patched.img"
-adb shell su -c "cp /data/local/tmp/dtbo_original.img /data/adb/dtbo_guard/dtbo_original.img"
 ```
 
 Use `dtbo_b` filenames instead if your active slot is `_b`.
@@ -148,7 +145,7 @@ When removed in Magisk, `uninstall.sh` restores `dtbo_original.img` to the activ
 Caveats:
 
 - Reversibility depends on keeping the correct `dtbo_original.img`.
-- By default, uninstall restores only the active slot. Set `RESTORE_BOTH_SLOTS=1` in `/data/adb/dtbo_guard/config.conf` if you intentionally want both slots restored.
+- By default, uninstall restores only the active slot. Set `RESTORE_BOTH_SLOTS=1` in `/data/adb/modules/dtbo_brightness_guard/config.conf` if you intentionally want both slots restored.
 - By default, the guard patches only the active slot. Set `PATCH_BOTH_SLOTS=1` only if you intentionally want the inactive slot kept byte-identical to the same patched image.
 
 ## Verification

@@ -1,12 +1,12 @@
 #!/system/bin/sh
 # DTBO Peak Brightness Guard - uninstall hook
 
-DIR=/data/adb/dtbo_guard
-CONF=$DIR/config.conf
-LOG=$DIR/guard.log
+MODDIR=${0%/*}
+CONF=$MODDIR/config.conf
+LOG=$MODDIR/guard.log
 
 [ -f "$CONF" ] && . "$CONF"
-[ -n "$ORIGINAL_IMG" ] || ORIGINAL_IMG=$DIR/dtbo_original.img
+[ -n "$ORIGINAL_IMG" ] || ORIGINAL_IMG=/data/local/tmp/dtbo_original.img
 
 log() { echo "$(date '+%m-%d %H:%M:%S') [uninstall] $1" >> "$LOG"; }
 
@@ -57,4 +57,4 @@ else
   restore_img "$ORIGINAL_IMG" "$ACTIVE"
 fi
 
-# Keep $DIR and the images so nothing is lost. The user can delete them manually.
+# Keep /data/local/tmp images in place. The user can delete them manually.

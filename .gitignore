@@ -4,6 +4,7 @@ backups/
 *.zip
 displayconfig-checks/
 fixed-script-device-test/
+guard-reapply-test/
 parser-fix-validation/
 pre-fix-config-backups/
 pre-fixed-restore-verification/
