@@ -101,7 +101,7 @@ To verify that the connected device has exactly the expected patch target withou
 .\patch_odin3_hdr_dtbo.ps1 -DryRun
 ```
 
-Dry run mode still pulls and backs up the active DTBO, then creates a patched test image locally. It does not push, flash, or reboot.
+Dry run mode still pulls and backs up the active DTBO. If the DTBO is unpatched, it creates a patched test image locally. If the DTBO is already patched, it reports the patched entries and exits without creating a new image. It does not push, flash, or reboot.
 
 ## No-Reboot Mode
 
@@ -123,13 +123,15 @@ magisk/dtbo_brightness_guard/
 
 The guard does not replace the PowerShell patcher. It is a persistence and reversibility helper for people who already ran the patcher and want Magisk to watch for OTA or slot-change regressions.
 
+The current guard module version is `v1.1.3`.
+
 Guard lifecycle:
 
 1. Run this patcher first so you have both images:
    - `dtbo_<slot>.original.img`
    - `dtbo_<slot>.hdr782.img` or `dtbo_<slot>.readback.img`
 2. Install the guard module in Magisk.
-3. Copy the images on-device:
+3. Copy the images on-device and keep them there while the guard is installed:
 
 ```sh
 adb push .\backups\<folder>\dtbo_a.hdr782.img /data/local/tmp/dtbo_patched.img
@@ -145,6 +147,7 @@ When removed in Magisk, `uninstall.sh` restores `dtbo_original.img` to the activ
 Caveats:
 
 - Reversibility depends on keeping the correct `dtbo_original.img`.
+- The guard expects `dtbo_patched.img` and `dtbo_original.img` to remain at `/data/local/tmp/` unless you edit `PATCHED_IMG` and `ORIGINAL_IMG` in `/data/adb/modules/dtbo_brightness_guard/config.conf`.
 - By default, uninstall restores only the active slot. Set `RESTORE_BOTH_SLOTS=1` in `/data/adb/modules/dtbo_brightness_guard/config.conf` if you intentionally want both slots restored.
 - By default, the guard patches only the active slot. Set `PATCH_BOTH_SLOTS=1` only if you intentionally want the inactive slot kept byte-identical to the same patched image.
 
@@ -185,7 +188,9 @@ Use `dtbo_b` instead if your active slot is `_b`.
 
 ## OTA Notes
 
-OTAs or slot switches may replace the patched DTBO. If HDR max luminance returns to `420.0`, rerun the patcher on the active slot.
+OTAs or slot switches may replace the patched DTBO. If you are not using the optional Magisk guard and HDR max luminance returns to `420.0`, rerun the patcher on the active slot.
+
+If the optional guard is installed with `AUTO_FLASH=1`, it should detect the stock value after boot and re-flash `dtbo_patched.img` to the active slot. Reboot once more after the guard logs a flash so Android boots from the patched DTBO.
 
 ## Credits
 
