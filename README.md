@@ -6,7 +6,7 @@ This patches the Odin 3 device tree overlay so Android reports the panel's real 
 
 ## Quickstart
 
-Download the latest release ZIP, not the old `v1.0.0` package:
+Download the latest release ZIP:
 
 ```text
 Odin-3-HDR-DTBO-Patcher-v1.1.1.zip
@@ -24,7 +24,7 @@ The patcher is the required part. It backs up the active DTBO, patches the activ
 Patched 40 ICNA3520 peak-brightness entries
 ```
 
-or, if the old broken `v1.0.0` package was already run:
+or, if some entries were already patched by a previous run:
 
 ```text
 Patched 29 ICNA3520 peak-brightness entries
@@ -37,7 +37,7 @@ or, if the device is already fully patched:
 Already patched: 40 ICNA3520 peak-brightness entries
 ```
 
-If the output says `11` total entries only, you are using an old/bad package.
+If the output does not match one of those patterns, download the latest release and run the patcher again.
 
 After reboot, verify:
 
@@ -161,7 +161,7 @@ The script will:
 
 On tested Odin 3 firmware this patches 40 ICNA3520 peak-brightness entries. The parser handles embedded FDT blobs even when their DTBO offsets are not 4-byte aligned.
 
-If an older `v1.0.0` run already partially patched 11 entries, this version can be run directly over it. It will leave the already-patched entries unchanged and patch the remaining stock entries.
+If a previous run already partially patched 11 entries, this version can be run directly over it. It will leave the already-patched entries unchanged and patch the remaining stock entries.
 
 Backups are saved under:
 
