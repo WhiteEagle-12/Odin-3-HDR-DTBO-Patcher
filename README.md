@@ -87,6 +87,8 @@ The script will:
 
 On tested Odin 3 firmware this patches 40 ICNA3520 peak-brightness entries. The parser handles embedded FDT blobs even when their DTBO offsets are not 4-byte aligned.
 
+If an older `v1.0.0` run already partially patched 11 entries, this version can be run directly over it. It will leave the already-patched entries unchanged and patch the remaining stock entries.
+
 Backups are saved under:
 
 ```text

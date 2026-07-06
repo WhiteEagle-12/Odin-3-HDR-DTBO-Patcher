@@ -178,11 +178,12 @@ function Patch-Dtbo {
   $patchable = @($allTargets | Where-Object { $_.Value -eq 4200000 })
   $alreadyPatched = @($allTargets | Where-Object { $_.Value -eq 7824283 })
 
-  if ($patchable.Count -gt 0 -and $alreadyPatched.Count -eq 0) {
+  if ($patchable.Count -gt 0) {
     [IO.File]::WriteAllBytes($OutputPath, $image)
     return [pscustomobject]@{
       Status = "Patched"
       Targets = $patchable
+      AlreadyPatchedCount = $alreadyPatched.Count
     }
   }
 
@@ -190,11 +191,12 @@ function Patch-Dtbo {
     return [pscustomobject]@{
       Status = "AlreadyPatched"
       Targets = $alreadyPatched
+      AlreadyPatchedCount = $alreadyPatched.Count
     }
   }
 
   $details = $allTargets | ForEach-Object { "$($_.Label): $($_.Path) = $($_.Value)" }
-  throw "Found a mixed or invalid Odin 3 ICNA3520 peak-brightness state: patchable=$($patchable.Count), alreadyPatched=$($alreadyPatched.Count).`n$($details -join "`n")"
+  throw "Found no patchable or already-patched Odin 3 ICNA3520 peak-brightness entries.`n$($details -join "`n")"
 }
 
 Write-Host "Odin 3 HDR DTBO Peak Brightness Patcher"
@@ -263,6 +265,9 @@ if ($result.Status -eq "AlreadyPatched") {
 Write-Host "Patched $($result.Targets.Count) ICNA3520 peak-brightness entries:"
 foreach ($target in $result.Targets) {
   Write-Host "  $($target.Label): $($target.Path)"
+}
+if ($result.AlreadyPatchedCount -gt 0) {
+  Write-Host "Already patched entries left unchanged: $($result.AlreadyPatchedCount)"
 }
 Write-Host "Old value: 4200000"
 Write-Host "New value: 7824283"

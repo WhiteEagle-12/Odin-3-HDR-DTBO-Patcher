@@ -6,6 +6,7 @@ displayconfig-checks/
 fixed-script-device-test/
 guard-reapply-test/
 parser-fix-validation/
+partial-upgrade-validation/
 pre-fix-config-backups/
 pre-fixed-restore-verification/
 restore-known-working/
