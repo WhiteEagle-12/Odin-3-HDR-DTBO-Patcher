@@ -6,16 +6,40 @@ This patches the Odin 3 device tree overlay so Android reports the panel's real 
 
 ## Quickstart
 
-Download the latest release ZIP:
+Use the patcher first, then the Magisk module.
+
+Download the latest release ZIP and extract it on Windows:
 
 ```text
 Odin-3-HDR-DTBO-Patcher-v1.1.1.zip
 ```
 
-Unzip it on Windows, connect the Odin 3 over USB, then run:
+The Odin 3 must be rooted with Magisk, USB debugging must be enabled, and you need a USB data cable. Charge-only cables will not work. Android platform-tools must either be in PATH, or PowerShell must be opened in the platform-tools folder.
+
+Run a dry run first:
+
+```powershell
+.\patch_odin3_hdr_dtbo.ps1 -DryRun
+```
+
+If you are running from the platform-tools folder instead of the patcher folder, use the script's full path:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\path\to\patch_odin3_hdr_dtbo.ps1 -DryRun
+```
+
+The dry run backs up the active DTBO and reports what would be patched without flashing. Check that it detects your Odin 3, active slot, DTBO block, and ICNA3520 peak-brightness entries.
+
+If the dry run looks correct, flash the patch:
 
 ```powershell
 .\patch_odin3_hdr_dtbo.ps1
+```
+
+Or, from the platform-tools folder:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File C:\path\to\patch_odin3_hdr_dtbo.ps1
 ```
 
 The patcher is the required part. It backs up the active DTBO, patches the active slot, verifies the readback hash, and reboots. On tested Odin 3 firmware, good output is one of these:
@@ -41,8 +65,8 @@ If the output does not match one of those patterns, download the latest release 
 
 After reboot, verify:
 
-```sh
-adb shell dumpsys display | grep -i HdrCapabilities
+```powershell
+adb shell dumpsys display | findstr /i mMaxLuminance
 ```
 
 Expected result includes:
@@ -51,6 +75,8 @@ Expected result includes:
 mMaxLuminance=782.4283
 mMaxAverageLuminance=782.4283
 ```
+
+Keep the generated `backups\` folder. It contains the original DTBO image needed for manual restore or guard-module uninstall restore.
 
 ### Optional Guard Module
 
@@ -135,11 +161,50 @@ Only use this on the AYN Odin 3 with the ICNA3520 OLED panel.
 ## Requirements
 
 - Windows
-- ADB in PATH
-- Odin 3 connected over USB
+- Android platform-tools, either in PATH or used from the platform-tools folder
+- Odin 3 connected over USB with a data-capable cable
 - USB debugging enabled
 - Magisk root working through `su`
 - Bootloader already unlocked
+
+## Windows And ADB Setup
+
+If ADB is not already in PATH:
+
+1. Download Android platform-tools from Google.
+2. Extract it somewhere easy to find, such as `Desktop\platform-tools`.
+3. Open PowerShell in that platform-tools folder.
+4. Run ADB as `.\adb` from that folder.
+
+Anywhere this README shows `adb`, use `.\adb` instead if you are running commands from the platform-tools folder and ADB is not in PATH.
+
+Confirm the Odin 3 is visible:
+
+```powershell
+.\adb devices
+```
+
+On the first connection, approve the USB debugging prompt on the Odin 3. If the device shows as `unauthorized`, the prompt is still waiting on the device.
+
+Confirm root works over ADB:
+
+```powershell
+.\adb shell su -c id
+```
+
+Expected output includes:
+
+```text
+uid=0(root)
+```
+
+If Magisk asks for root permission on the Odin 3, grant it.
+
+On the Odin 3, the usual setup is:
+
+1. Enable Developer options by tapping Build number 7 times.
+2. Enable USB debugging.
+3. In USB preferences, use `Connected device` for USB control and `File Transfer` for USB mode.
 
 ## Usage
 
@@ -168,6 +233,8 @@ Backups are saved under:
 ```text
 backups/<device-serial>-<timestamp>/
 ```
+
+Copy that folder somewhere permanent after a successful patch.
 
 ## Dry Run
 
@@ -231,8 +298,8 @@ Caveats:
 
 After reboot:
 
-```sh
-adb shell dumpsys display | grep -i HdrCapabilities
+```powershell
+adb shell dumpsys display | findstr /i mMaxLuminance
 ```
 
 Expected result includes:
@@ -248,6 +315,24 @@ SurfaceFlinger should also show:
 desiredMaxLuminance=782.428284
 ```
 
+For a direct live device-tree check:
+
+```powershell
+adb shell su -c "od -A n -t x1 /sys/firmware/devicetree/base/soc/qcom,mdss_mdp@ae00000/qcom,mdss_dsi_icna3520_dsc_cmd/qcom,mdss-dsi-panel-peak-brightness"
+```
+
+Expected patched bytes:
+
+```text
+00 77 63 9b
+```
+
+Stock bytes are:
+
+```text
+00 40 16 40
+```
+
 ## Restore
 
 The script saves the original DTBO image before flashing. To restore manually, push the backup and write it to the active DTBO block.
@@ -261,6 +346,17 @@ adb reboot
 ```
 
 Use `dtbo_b` instead if your active slot is `_b`.
+
+## Troubleshooting
+
+| Symptom | Fix |
+| --- | --- |
+| `adb` is not recognized in PowerShell | Open PowerShell in the platform-tools folder and use `.\adb`, or add platform-tools to PATH. |
+| `adb devices` is empty | Check that USB debugging is enabled, USB mode is `File Transfer`, USB control is `Connected device`, and the cable supports data. |
+| The device is still not listed | Try another port or cable. On Windows, install or update the Google USB Driver and confirm the device appears as an Android ADB Interface. |
+| `adb devices` says `unauthorized` | Accept the USB debugging prompt on the Odin 3. If it does not appear, revoke USB debugging authorizations, toggle USB debugging off and on, replug USB, then run `adb kill-server` and retry. |
+| `su` fails | Open Magisk on the Odin 3 and grant root for shell/ADB when prompted. |
+| Verification still shows `420.0` after flashing | Reboot once after the flash. DTBO values are read at boot. |
 
 ## OTA Notes
 
