@@ -4,6 +4,80 @@ Companion tool for the Odin 3 HDR Fix Magisk module.
 
 This patches the Odin 3 device tree overlay so Android reports the panel's real HDR peak brightness instead of the stock 420-nit limit.
 
+## Quickstart
+
+Download the latest release ZIP, not the old `v1.0.0` package:
+
+```text
+Odin-3-HDR-DTBO-Patcher-v1.1.1.zip
+```
+
+Unzip it on Windows, connect the Odin 3 over USB, then run:
+
+```powershell
+.\patch_odin3_hdr_dtbo.ps1
+```
+
+The patcher is the required part. It backs up the active DTBO, patches the active slot, verifies the readback hash, and reboots. On tested Odin 3 firmware, good output is one of these:
+
+```text
+Patched 40 ICNA3520 peak-brightness entries
+```
+
+or, if the old broken `v1.0.0` package was already run:
+
+```text
+Patched 29 ICNA3520 peak-brightness entries
+Already patched entries left unchanged: 11
+```
+
+or, if the device is already fully patched:
+
+```text
+Already patched: 40 ICNA3520 peak-brightness entries
+```
+
+If the output says `11` total entries only, you are using an old/bad package.
+
+After reboot, verify:
+
+```sh
+adb shell dumpsys display | grep -i HdrCapabilities
+```
+
+Expected result includes:
+
+```text
+mMaxLuminance=782.4283
+mMaxAverageLuminance=782.4283
+```
+
+### Optional Guard Module
+
+The guard is optional. It is installed as a Magisk module ZIP:
+
+```text
+DTBO-Brightness-Guard-v1.1.3.zip
+```
+
+The guard does not create the patch. Install it only after running the patcher. Its job is to watch for OTA or slot-change regressions and re-flash the saved patched DTBO if the device boots back to stock.
+
+After installing the guard module in Magisk, keep these two files on the device:
+
+```sh
+adb push .\backups\<folder>\dtbo_a.hdr782.img /data/local/tmp/dtbo_patched.img
+adb push .\backups\<folder>\dtbo_a.original.img /data/local/tmp/dtbo_original.img
+```
+
+Use `dtbo_b` filenames instead if your active slot is `_b`.
+
+Guard boot behavior:
+
+1. If the live DTBO is already patched, it logs OK and does nothing.
+2. If the live DTBO is stock, it flashes `/data/local/tmp/dtbo_patched.img` back to the active slot.
+3. If the guard had to flash, reboot once more so Android boots from the patched DTBO.
+4. If the module is removed in Magisk, it tries to restore `/data/local/tmp/dtbo_original.img` to the active slot.
+
 ## What This Fixes
 
 Some Odin 3 units advertise HDR support, but the active panel device tree reports:
